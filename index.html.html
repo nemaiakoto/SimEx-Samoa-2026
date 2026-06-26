@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMEX Samoa 2026 | EXCON IM Dashboard</title>
+    
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        :root {
+            --ocha-blue: #005bbb;
+            --alert-orange: #ff9800;
+            --alert-red: #b71c1c;
+            --text-main: #333;
+            --border-light: #ddd;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* Fullscreen Map Background */
+        #map {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            z-index: 0;
+        }
+
+        /* Full-Width Top Header */
+        .top-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0, 91, 187, 0.95);
+            color: white;
+            padding: 12px 25px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1001; /* Sits above everything */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            pointer-events: auto;
+        }
+        .top-header img {
+            height: 45px;
+            width: auto;
+            /* Forces the standard blue/black Wiki PNG logo to render as pure white */
+            filter: brightness(0) invert(1); 
+        }
+        .top-header .header-text h1 { 
+            margin: 0; 
+            font-size: 20px; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .top-header .header-text p { 
+            margin: 3px 0 0 0; 
+            font-size: 13px; 
+            opacity: 0.9; 
+        }
+
+        /* Left Column Dashboard Layout */
+        .sidebar-container {
+            position: absolute;
+            top: 85px; /* Offset to sit cleanly below the new top header */
+            left: 15px;
+            width: 320px;
+            max-height: calc(100vh - 100px);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            pointer-events: none; /* Allows map interaction between cards */
+        }
+        .sidebar-container::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* Left-stacked Mini Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.94);
+            border-left: 4px solid var(--ocha-blue);
+            border-radius: 4px;
+            padding: 14px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            backdrop-filter: blur(4px);
+            pointer-events: auto; /* Re-enables interaction on the card itself */
+        }
+        .card h2 {
+            font-size: 14px;
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: var(--ocha-blue);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 5px;
+        }
+        .card p {
+            font-size: 12px;
+            margin: 5px 0;
+        }
+        
+        .alert-badge {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 3px;
+            color: white;
+            font-weight: bold;
+            font-size: 10px;
+            background-color: var(--alert-orange);
+            margin-bottom: 8px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+        }
+        table th, table td {
+            text-align: left;
+            padding: 5px 2px;
+            border-bottom: 1px solid #eee;
+            font-size: 11px;
+        }
+        table th {
+            color: #666;
+            text-transform: uppercase;
+            width: 40%;
+        }
+        .highlight {
+            font-weight: bold;
+            color: var(--alert-orange);
+        }
+
+        /* Right-hand Map Overlay Panel */
+        .map-overlay-stats {
+            position: absolute;
+            top: 85px; /* Matches sidebar offset */
+            right: 15px;
+            width: 250px;
+            background: rgba(20, 24, 33, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            z-index: 1000;
+            border-top: 4px solid var(--alert-red);
+            pointer-events: auto;
+        }
+        .map-overlay-stats h3 {
+            margin: 0 0 10px 0;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #ffc107;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-label { font-size: 11px; color: #ccc; }
+        .stat-value { font-size: 15px; font-weight: bold; color: #fff; }
+        
+        /* Map Text Labels styling */
+        .map-label {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+            padding: 4px 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Map -->
+    <div id="map"></div>
+
+    <!-- Full-Width Top Header -->
+    <div class="top-header">
+        <!-- Using a highly reliable pre-rendered PNG from Wikimedia to fix the rendering issue -->
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/United_Nations_Office_for_the_Coordination_of_Humanitarian_Affairs_logo.svg/512px-United_Nations_Office_for_the_Coordination_of_Humanitarian_Affairs_logo.svg.png" alt="OCHA Logo" crossorigin="anonymous">
+        <div class="header-text">
+            <h1>SIMEX Samoa 2026</h1>
+            <p>EXCON Active Alert Feed</p>
+        </div>
+    </div>
+
+    <!-- Left Column Sidebar -->
+    <div class="sidebar-container">
+
+        <!-- GDACS Card -->
+        <div class="card">
+            <h2>GDACS Alert Dummy</h2>
+            <div class="alert-badge">ORANGE ALERT (Tsunami)</div>
+            <table>
+                <tr><th>Event</th><td>EQ & Tsunami</td></tr>
+                <tr><th>Magnitude</th><td class="highlight">8.2M</td></tr>
+                <tr><th>Date/Time</th><td>04 Aug 2026 18:05 UTC</td></tr>
+                <tr><th>Location</th><td>Tonga Trench (~23°S)</td></tr>
+                <tr><th>Depth</th><td>~15 km</td></tr>
+            </table>
+        </div>
+
+        <!-- USGS PAGER Card -->
+        <div class="card">
+            <h2>USGS PAGER Dummy</h2>
+            <div class="alert-badge">ORANGE ALERT (Economic)</div>
+            <p style="font-size:10px; color:#666; font-style:italic;">Note: Evaluates shaking damage only; excludes independent tsunami calculations.</p>
+            <table>
+                <tr><th>Est. Fatalities</th><td>0–10 (Low Shaking)</td></tr>
+                <tr><th>Est. Losses</th><td>1–10% of Regional GDP</td></tr>
+                <tr><th>Primary Threat</th><td>Tsunami Inundation</td></tr>
+            </table>
+        </div>
+
+        <!-- USGS ShakeMap Card -->
+        <div class="card">
+            <h2>USGS ShakeMap Dummy</h2>
+            <p><strong>Far-Field M8.2 (Hour 0)</strong></p>
+            <table>
+                <tr><th>Samoa Shaking</th><td>MMI III–IV (Weak/Light)</td></tr>
+            </table>
+            
+            <p style="margin-top: 10px;"><strong>Local Aftershock (Hour 24 Inject)</strong></p>
+            <table>
+                <tr><th>Magnitude</th><td class="highlight">6.5M</td></tr>
+                <tr><th>Location</th><td>South-Southwest of Upolu</td></tr>
+                <tr><th>Apia Shaking</th><td style="color:var(--alert-red); font-weight:bold;">MMI V–VI (Mod/Strong)</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Right Column Map Overlay -->
+    <div class="map-overlay-stats">
+        <h3>Humanitarian Impact Summary</h3>
+        <div class="stat-row">
+            <span class="stat-label">Target Area:</span>
+            <span class="stat-value" style="color: #ffc107; font-size:12px;">Upolu Coastal Zones</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Total Affected Pop:</span>
+            <span class="stat-value" style="color:#ff9800;">6,000 – 7,000</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Displaced Persons:</span>
+            <span class="stat-value">1,500 – 2,000</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Reported Injuries:</span>
+            <span class="stat-value">~180</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">UN Staff Constraints:</span>
+            <span class="stat-value" style="font-size:12px; color:#ffc107;">Up to 30%</span>
+        </div>
+    </div>
+
+    <script>
+        // Initialize map centered on Upolu, Samoa
+        const map = L.map('map', {
+            zoomControl: false 
+        }).setView([-13.92, -171.74], 10);
+
+        // Esri World Imagery Satellite Tiles
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        }).addTo(map);
+
+        // Coordinate center for the compounding local M6.5 hazard zone
+        const epicenterLat = -14.06;
+        const epicenterLng = -171.88;
+
+        // Visualizing ShakeMap Impact Zones via Concentric Rings
+        L.circle([epicenterLat, epicenterLng], {
+            color: '#ff9800',
+            fillColor: '#ff9800',
+            fillOpacity: 0.15,
+            weight: 1.5,
+            radius: 45000 
+        }).addTo(map);
+
+        L.circle([epicenterLat, epicenterLng], {
+            color: '#e65100',
+            fillColor: '#e65100',
+            fillOpacity: 0.25,
+            weight: 1.5,
+            radius: 25000 
+        }).addTo(map);
+
+        L.circle([epicenterLat, epicenterLng], {
+            color: '#b71c1c',
+            fillColor: '#b71c1c',
+            fillOpacity: 0.40,
+            weight: 2,
+            radius: 12000 
+        }).addTo(map);
+
+        // Epicenter Visual Point
+        L.circleMarker([epicenterLat, epicenterLng], {
+            color: '#ffffff',
+            fillColor: '#b71c1c',
+            fillOpacity: 1,
+            weight: 2,
+            radius: 6
+        }).addTo(map).bindTooltip("<b>EPICENTER: M6.5 Local Shock</b><br>Simulated 24-Hour Inject", {
+            permanent: true, 
+            direction: 'bottom',
+            className: 'map-label',
+            offset: [0, 10]
+        });
+
+        // Static Text Overlay Indicating Exposed Impact Zone on Island
+        L.marker([-13.93, -171.65], { opacity: 0 }).addTo(map)
+            .bindTooltip("<b>Upolu Impact Zone</b><br>~6,000-7,000 Exposed", {
+                permanent: true, 
+                direction: 'center', 
+                className: 'map-label'
+            });
+    </script>
+</body>
+</html>
