@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNCT SIMEX Samoa 2026 | EXCON IM Dashboard</title>
+    <title>SIMEX Samoa 2026 | EXCON IM Dashboard</title>
     
     <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -69,7 +69,7 @@
             opacity: 0.9; 
         }
 
-        /* Left Column Dashboard Layout */
+        /* Left Column Sidebar */
         .sidebar-container {
             position: absolute;
             top: 85px; 
@@ -194,6 +194,10 @@
             border-color: #ff5252;
             color: #ff5252;
         }
+        .quake-icon-style {
+            font-size: 24px;
+            text-shadow: 0 0 5px #000;
+        }
     </style>
 </head>
 <body>
@@ -203,7 +207,7 @@
 
     <!-- Full-Width Top Header -->
     <div class="top-header">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/United_Nations_Office_for_the_Coordination_of_Humanitarian_Affairs_logo.svg/512px-United_Nations_Office_for_the_Coordination_of_Humanitarian_Affairs_logo.svg.png" alt="OCHA Logo" crossorigin="anonymous">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/United_Nations_Office_for_the_Coordination_of_Humanitarian_Affairs_logo.svg/512px-United_Nations_Office_for_the_Coordination_of_Humanitarian_Affairs_logo.svg.png" alt="UN Logo" crossorigin="anonymous">
         <div class="header-text">
             <h1>SIMEX Samoa 2026</h1>
             <p>EXCON Active Alert Feed | Tuesday 4th August, 7.30am</p>
@@ -282,78 +286,37 @@
     </div>
 
     <script>
-        // Initialize map centered between the epicenters and Upolu
-        // Coordinates slightly offset to perfectly frame the left sidebar and right overlay
-        const map = L.map('map', {
-            zoomControl: false 
-        }).setView([-14.3, -172.1], 8);
+        // Initialize map
+        const map = L.map('map', { zoomControl: false }).setView([-14.3, -172.1], 8);
 
-        // Esri World Imagery Satellite Tiles
+        // Satellite Tiles
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            attribution: 'Tiles &copy; Esri'
         }).addTo(map);
 
-        // Define Epicenter Coordinates
         const eq82Lat = -14.911572;
         const eq82Lng = -172.953400;
         
         const eq65Lat = -14.933110;
         const eq65Lng = -172.709328;
 
-        // --- M8.2 Tonga-Kermadec Event (Hour 0) ---
-        
-        // Massive Outer Ring indicating Tsunami generation and far-field shaking
-        L.circle([eq82Lat, eq82Lng], {
-            color: '#ff9800',
-            fillColor: '#ff9800',
-            fillOpacity: 0.1,
-            weight: 1,
-            radius: 120000 
-        }).addTo(map);
-
-        L.circle([eq82Lat, eq82Lng], {
-            color: '#e65100',
-            fillColor: '#e65100',
-            fillOpacity: 0.15,
-            weight: 1.5,
-            radius: 70000 
-        }).addTo(map);
-
-        // M8.2 Epicenter Marker
-        L.circleMarker([eq82Lat, eq82Lng], {
-            color: '#ffffff',
-            fillColor: '#ff9800',
-            fillOpacity: 1,
-            weight: 2,
-            radius: 8
-        }).addTo(map).bindTooltip("<b>M8.2 Tonga-Kermadec Subduction</b><br>Tuesday 4th August, 7.30am", {
-            permanent: true, 
-            direction: 'left',
-            className: 'map-label',
-            offset: [-10, 0]
+        // Custom Earthquake Icon
+        const quakeIcon = L.divIcon({
+            html: '<span class="quake-icon-style">⚠️</span>',
+            className: 'custom-icon',
+            iconSize: [25, 25]
         });
 
+        // --- M8.2 Tonga-Kermadec Event (Hour 0) ---
+        L.marker([eq82Lat, eq82Lng], { icon: quakeIcon }).addTo(map)
+            .bindTooltip("<b>Samoa M8.2 EQ</b><br>Tuesday 4th August, 7.30am", {
+                permanent: true, 
+                direction: 'left',
+                className: 'map-label',
+                offset: [-15, 0]
+            });
 
         // --- M6.5 Local Aftershock Event (Hour 24) ---
-        
-        // Tighter rings indicating intense local structural shaking
-        L.circle([eq65Lat, eq65Lng], {
-            color: '#b71c1c',
-            fillColor: '#b71c1c',
-            fillOpacity: 0.25,
-            weight: 2,
-            radius: 30000 
-        }).addTo(map);
-
-        L.circle([eq65Lat, eq65Lng], {
-            color: '#ff0000',
-            fillColor: '#b71c1c',
-            fillOpacity: 0.40,
-            weight: 2,
-            radius: 10000 
-        }).addTo(map);
-
-        // M6.5 Epicenter Marker
         L.circleMarker([eq65Lat, eq65Lng], {
             color: '#ffffff',
             fillColor: '#b71c1c',
@@ -366,35 +329,6 @@
             className: 'map-label map-label-red',
             offset: [10, 0]
         });
-
-        // --- South Upolu Tsunami Impact Zone ---
-        
-        // Polylines/Markers highlighting the affected coastline
-        const upoluSouthLat = -14.02;
-        const upoluSouthLng = -171.75;
-
-        // Coastline highlight (approximate visual line along south Upolu)
-        L.polyline([
-            [-13.98, -171.95],
-            [-14.01, -171.85],
-            [-14.02, -171.75],
-            [-14.03, -171.60],
-            [-14.02, -171.45]
-        ], {
-            color: '#ffc107',
-            weight: 4,
-            opacity: 0.8,
-            dashArray: '10, 10'
-        }).addTo(map);
-
-        // Label for the Impact Zone
-        L.marker([upoluSouthLat, upoluSouthLng], { opacity: 0 }).addTo(map)
-            .bindTooltip("<b>South Upolu Coast</b><br>Tsunami Wave Impact Zone<br>~6,000-7,000 Exposed", {
-                permanent: true, 
-                direction: 'bottom', 
-                className: 'map-label',
-                offset: [0, 5]
-            });
             
     </script>
 </body>
