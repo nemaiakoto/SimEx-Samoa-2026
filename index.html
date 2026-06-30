@@ -48,14 +48,13 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            z-index: 1001; /* Sits above everything */
+            z-index: 1001; 
             box-shadow: 0 4px 8px rgba(0,0,0,0.4);
             pointer-events: auto;
         }
         .top-header img {
             height: 45px;
             width: auto;
-            /* Forces the standard blue/black Wiki PNG logo to render as pure white */
             filter: brightness(0) invert(1); 
         }
         .top-header .header-text h1 { 
@@ -73,7 +72,7 @@
         /* Left Column Dashboard Layout */
         .sidebar-container {
             position: absolute;
-            top: 85px; /* Offset to sit cleanly below the new top header */
+            top: 85px; 
             left: 15px;
             width: 320px;
             max-height: calc(100vh - 100px);
@@ -84,7 +83,7 @@
             overflow-y: auto;
             -ms-overflow-style: none;
             scrollbar-width: none;
-            pointer-events: none; /* Allows map interaction between cards */
+            pointer-events: none; 
         }
         .sidebar-container::-webkit-scrollbar {
             display: none;
@@ -98,7 +97,7 @@
             padding: 14px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.15);
             backdrop-filter: blur(4px);
-            pointer-events: auto; /* Re-enables interaction on the card itself */
+            pointer-events: auto; 
         }
         .card h2 {
             font-size: 14px;
@@ -139,7 +138,7 @@
         table th {
             color: #666;
             text-transform: uppercase;
-            width: 40%;
+            width: 35%;
         }
         .highlight {
             font-weight: bold;
@@ -149,7 +148,7 @@
         /* Right-hand Map Overlay Panel */
         .map-overlay-stats {
             position: absolute;
-            top: 85px; /* Matches sidebar offset */
+            top: 85px; 
             right: 15px;
             width: 250px;
             background: rgba(20, 24, 33, 0.9);
@@ -181,14 +180,19 @@
         
         /* Map Text Labels styling */
         .map-label {
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255,255,255,0.3);
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.5);
             color: #fff;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 11px;
             padding: 4px 8px;
+            text-align: center;
+        }
+        .map-label-red {
+            border-color: #ff5252;
+            color: #ff5252;
         }
     </style>
 </head>
@@ -199,11 +203,10 @@
 
     <!-- Full-Width Top Header -->
     <div class="top-header">
-        <!-- Using a highly reliable pre-rendered PNG from Wikimedia to fix the rendering issue -->
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/United_Nations_Office_for_the_Coordination_of_Humanitarian_Affairs_logo.svg/512px-United_Nations_Office_for_the_Coordination_of_Humanitarian_Affairs_logo.svg.png" alt="OCHA Logo" crossorigin="anonymous">
         <div class="header-text">
             <h1>SIMEX Samoa 2026</h1>
-            <p>EXCON Active Alert Feed</p>
+            <p>EXCON Active Alert Feed | Tuesday 4th August, 7.30am</p>
         </div>
     </div>
 
@@ -217,9 +220,9 @@
             <table>
                 <tr><th>Event</th><td>EQ & Tsunami</td></tr>
                 <tr><th>Magnitude</th><td class="highlight">8.2M</td></tr>
-                <tr><th>Date/Time</th><td>04 Aug 2026 18:05 UTC</td></tr>
-                <tr><th>Location</th><td>Tonga Trench (~23°S)</td></tr>
-                <tr><th>Depth</th><td>~15 km</td></tr>
+                <tr><th>Date/Time</th><td>Tue 4th Aug, 7.30am</td></tr>
+                <tr><th>Location</th><td>Tonga-Kermadec Trench</td></tr>
+                <tr><th>Coords</th><td>-14.91, -172.95</td></tr>
             </table>
         </div>
 
@@ -231,7 +234,7 @@
             <table>
                 <tr><th>Est. Fatalities</th><td>0–10 (Low Shaking)</td></tr>
                 <tr><th>Est. Losses</th><td>1–10% of Regional GDP</td></tr>
-                <tr><th>Primary Threat</th><td>Tsunami Inundation</td></tr>
+                <tr><th>Threat</th><td>Tsunami Inundation (South Upolu)</td></tr>
             </table>
         </div>
 
@@ -240,13 +243,14 @@
             <h2>USGS ShakeMap Dummy</h2>
             <p><strong>Far-Field M8.2 (Hour 0)</strong></p>
             <table>
+                <tr><th>Coords</th><td>-14.911, -172.953</td></tr>
                 <tr><th>Samoa Shaking</th><td>MMI III–IV (Weak/Light)</td></tr>
             </table>
             
-            <p style="margin-top: 10px;"><strong>Local Aftershock (Hour 24 Inject)</strong></p>
+            <p style="margin-top: 10px;"><strong>Local Aftershock (Hour 24)</strong></p>
             <table>
                 <tr><th>Magnitude</th><td class="highlight">6.5M</td></tr>
-                <tr><th>Location</th><td>South-Southwest of Upolu</td></tr>
+                <tr><th>Coords</th><td>-14.933, -172.709</td></tr>
                 <tr><th>Apia Shaking</th><td style="color:var(--alert-red); font-weight:bold;">MMI V–VI (Mod/Strong)</td></tr>
             </table>
         </div>
@@ -257,7 +261,7 @@
         <h3>Humanitarian Impact Summary</h3>
         <div class="stat-row">
             <span class="stat-label">Target Area:</span>
-            <span class="stat-value" style="color: #ffc107; font-size:12px;">Upolu Coastal Zones</span>
+            <span class="stat-value" style="color: #ffc107; font-size:12px;">South Upolu Coast</span>
         </div>
         <div class="stat-row">
             <span class="stat-label">Total Affected Pop:</span>
@@ -278,66 +282,120 @@
     </div>
 
     <script>
-        // Initialize map centered on Upolu, Samoa
+        // Initialize map centered between the epicenters and Upolu
+        // Coordinates slightly offset to perfectly frame the left sidebar and right overlay
         const map = L.map('map', {
             zoomControl: false 
-        }).setView([-13.92, -171.74], 10);
+        }).setView([-14.3, -172.1], 8);
 
         // Esri World Imagery Satellite Tiles
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
         }).addTo(map);
 
-        // Coordinate center for the compounding local M6.5 hazard zone
-        const epicenterLat = -14.06;
-        const epicenterLng = -171.88;
+        // Define Epicenter Coordinates
+        const eq82Lat = -14.911572;
+        const eq82Lng = -172.953400;
+        
+        const eq65Lat = -14.933110;
+        const eq65Lng = -172.709328;
 
-        // Visualizing ShakeMap Impact Zones via Concentric Rings
-        L.circle([epicenterLat, epicenterLng], {
+        // --- M8.2 Tonga-Kermadec Event (Hour 0) ---
+        
+        // Massive Outer Ring indicating Tsunami generation and far-field shaking
+        L.circle([eq82Lat, eq82Lng], {
             color: '#ff9800',
             fillColor: '#ff9800',
-            fillOpacity: 0.15,
-            weight: 1.5,
-            radius: 45000 
+            fillOpacity: 0.1,
+            weight: 1,
+            radius: 120000 
         }).addTo(map);
 
-        L.circle([epicenterLat, epicenterLng], {
+        L.circle([eq82Lat, eq82Lng], {
             color: '#e65100',
             fillColor: '#e65100',
-            fillOpacity: 0.25,
+            fillOpacity: 0.15,
             weight: 1.5,
-            radius: 25000 
+            radius: 70000 
         }).addTo(map);
 
-        L.circle([epicenterLat, epicenterLng], {
+        // M8.2 Epicenter Marker
+        L.circleMarker([eq82Lat, eq82Lng], {
+            color: '#ffffff',
+            fillColor: '#ff9800',
+            fillOpacity: 1,
+            weight: 2,
+            radius: 8
+        }).addTo(map).bindTooltip("<b>M8.2 Tonga-Kermadec Subduction</b><br>Tuesday 4th August, 7.30am", {
+            permanent: true, 
+            direction: 'left',
+            className: 'map-label',
+            offset: [-10, 0]
+        });
+
+
+        // --- M6.5 Local Aftershock Event (Hour 24) ---
+        
+        // Tighter rings indicating intense local structural shaking
+        L.circle([eq65Lat, eq65Lng], {
             color: '#b71c1c',
+            fillColor: '#b71c1c',
+            fillOpacity: 0.25,
+            weight: 2,
+            radius: 30000 
+        }).addTo(map);
+
+        L.circle([eq65Lat, eq65Lng], {
+            color: '#ff0000',
             fillColor: '#b71c1c',
             fillOpacity: 0.40,
             weight: 2,
-            radius: 12000 
+            radius: 10000 
         }).addTo(map);
 
-        // Epicenter Visual Point
-        L.circleMarker([epicenterLat, epicenterLng], {
+        // M6.5 Epicenter Marker
+        L.circleMarker([eq65Lat, eq65Lng], {
             color: '#ffffff',
             fillColor: '#b71c1c',
             fillOpacity: 1,
             weight: 2,
             radius: 6
-        }).addTo(map).bindTooltip("<b>EPICENTER: M6.5 Local Shock</b><br>Simulated 24-Hour Inject", {
+        }).addTo(map).bindTooltip("<b>M6.5 Local Aftershock</b><br>Simulated 24-Hour Inject", {
             permanent: true, 
-            direction: 'bottom',
-            className: 'map-label',
-            offset: [0, 10]
+            direction: 'right',
+            className: 'map-label map-label-red',
+            offset: [10, 0]
         });
 
-        // Static Text Overlay Indicating Exposed Impact Zone on Island
-        L.marker([-13.93, -171.65], { opacity: 0 }).addTo(map)
-            .bindTooltip("<b>Upolu Impact Zone</b><br>~6,000-7,000 Exposed", {
+        // --- South Upolu Tsunami Impact Zone ---
+        
+        // Polylines/Markers highlighting the affected coastline
+        const upoluSouthLat = -14.02;
+        const upoluSouthLng = -171.75;
+
+        // Coastline highlight (approximate visual line along south Upolu)
+        L.polyline([
+            [-13.98, -171.95],
+            [-14.01, -171.85],
+            [-14.02, -171.75],
+            [-14.03, -171.60],
+            [-14.02, -171.45]
+        ], {
+            color: '#ffc107',
+            weight: 4,
+            opacity: 0.8,
+            dashArray: '10, 10'
+        }).addTo(map);
+
+        // Label for the Impact Zone
+        L.marker([upoluSouthLat, upoluSouthLng], { opacity: 0 }).addTo(map)
+            .bindTooltip("<b>South Upolu Coast</b><br>Tsunami Wave Impact Zone<br>~6,000-7,000 Exposed", {
                 permanent: true, 
-                direction: 'center', 
-                className: 'map-label'
+                direction: 'bottom', 
+                className: 'map-label',
+                offset: [0, 5]
             });
+            
     </script>
 </body>
 </html>
