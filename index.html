@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIMEX Samoa 2026 | EXCON IM Dashboard</title>
     
-    <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -18,318 +17,93 @@
             --border-light: #ddd;
         }
         
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: var(--text-main);
-            overflow: hidden;
-        }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; overflow: hidden; }
+        #map { position: fixed; top: 0; bottom: 0; width: 100%; z-index: 0; }
 
-        /* Fullscreen Map Background */
-        #map {
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            width: 100%;
-            z-index: 0;
-        }
-
-        /* Full-Width Top Header */
         .top-header {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
+            position: absolute; top: 0; left: 0; width: 100%;
             background-color: rgba(0, 91, 187, 0.95);
-            color: white;
-            padding: 12px 25px;
-            box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            z-index: 1001; 
+            color: white; padding: 12px 25px; box-sizing: border-box;
+            display: flex; align-items: center; gap: 15px; z-index: 1001;
             box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-            pointer-events: auto;
         }
-        .top-header img {
-            height: 45px;
-            width: auto;
-            filter: brightness(0) invert(1); 
-        }
-        .top-header .header-text h1 { 
-            margin: 0; 
-            font-size: 20px; 
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .top-header .header-text p { 
-            margin: 3px 0 0 0; 
-            font-size: 13px; 
-            opacity: 0.9; 
-        }
+        .top-header img { height: 45px; width: auto; background: white; padding: 2px; border-radius: 50%; }
+        .header-text h1 { margin: 0; font-size: 20px; text-transform: uppercase; }
+        .header-text p { margin: 3px 0 0 0; font-size: 13px; opacity: 0.9; }
 
-        /* Left Column Sidebar */
-        .sidebar-container {
-            position: absolute;
-            top: 85px; 
-            left: 15px;
-            width: 320px;
-            max-height: calc(100vh - 100px);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            overflow-y: auto;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-            pointer-events: none; 
+        .sidebar-container { 
+            position: absolute; top: 85px; left: 15px; width: 320px; 
+            max-height: calc(100vh - 100px); z-index: 1000; 
+            display: flex; flex-direction: column; gap: 12px; 
+            overflow-y: auto; scrollbar-width: none;
         }
-        .sidebar-container::-webkit-scrollbar {
-            display: none;
+        .sidebar-container::-webkit-scrollbar { display: none; }
+        .card { 
+            background: rgba(255, 255, 255, 0.94); border-left: 4px solid var(--ocha-blue); 
+            padding: 14px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); 
         }
+        .card h2 { font-size: 14px; margin-top: 0; color: var(--ocha-blue); text-transform: uppercase; border-bottom: 1px solid var(--border-light); padding-bottom: 5px; }
+        .card p { font-size: 12px; line-height: 1.4; color: #444; }
         
-        /* Left-stacked Mini Cards */
-        .card {
-            background: rgba(255, 255, 255, 0.94);
-            border-left: 4px solid var(--ocha-blue);
-            border-radius: 4px;
-            padding: 14px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
-            backdrop-filter: blur(4px);
-            pointer-events: auto; 
-        }
-        .card h2 {
-            font-size: 14px;
-            margin-top: 0;
-            margin-bottom: 8px;
-            color: var(--ocha-blue);
-            text-transform: uppercase;
-            border-bottom: 1px solid var(--border-light);
-            padding-bottom: 5px;
-        }
-        .card p {
-            font-size: 12px;
-            margin: 5px 0;
-        }
-        
-        .alert-badge {
-            display: inline-block;
-            padding: 3px 6px;
-            border-radius: 3px;
-            color: white;
-            font-weight: bold;
-            font-size: 10px;
-            background-color: var(--alert-orange);
-            margin-bottom: 8px;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 5px;
-        }
-        table th, table td {
-            text-align: left;
-            padding: 5px 2px;
-            border-bottom: 1px solid #eee;
-            font-size: 11px;
-        }
-        table th {
-            color: #666;
-            text-transform: uppercase;
-            width: 35%;
-        }
-        .highlight {
-            font-weight: bold;
-            color: var(--alert-orange);
-        }
-
-        /* Right-hand Map Overlay Panel */
-        .map-overlay-stats {
-            position: absolute;
-            top: 85px; 
-            right: 15px;
-            width: 250px;
-            background: rgba(20, 24, 33, 0.9);
-            color: white;
-            padding: 15px;
-            border-radius: 4px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            z-index: 1000;
-            border-top: 4px solid var(--alert-red);
-            pointer-events: auto;
-        }
-        .map-overlay-stats h3 {
-            margin: 0 0 10px 0;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #ffc107;
-        }
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .stat-row:last-child { border-bottom: none; }
-        .stat-label { font-size: 11px; color: #ccc; }
-        .stat-value { font-size: 15px; font-weight: bold; color: #fff; }
-        
-        /* Map Text Labels styling */
         .map-label {
-            background: rgba(0, 0, 0, 0.7);
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            color: #fff;
-            font-weight: bold;
-            font-size: 11px;
-            padding: 4px 8px;
-            text-align: center;
+            background: rgba(0,0,0,0.7); color: #fff; border: 1px solid #555; padding: 4px 8px;
+            font-size: 11px; font-weight: bold; border-radius: 4px; text-align: center;
         }
-        .map-label-red {
-            border-color: #ff5252;
-            color: #ff5252;
-        }
-        .quake-icon-style {
-            font-size: 24px;
-            text-shadow: 0 0 5px #000;
-        }
+        .map-label-red { border-color: #ff5252; color: #ff5252; }
     </style>
 </head>
 <body>
-
-    <!-- Background Map -->
     <div id="map"></div>
-
-    <!-- Full-Width Top Header -->
     <div class="top-header">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/United_Nations_Office_for_the_Coordination_of_Humanitarian_Affairs_logo.svg/512px-United_Nations_Office_for_the_Coordination_of_Humanitarian_Affairs_logo.svg.png" alt="UN Logo" crossorigin="anonymous">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/ee/UN_emblem_blue.svg" alt="UN Emblem">
         <div class="header-text">
             <h1>SIMEX Samoa 2026</h1>
             <p>EXCON Active Alert Feed | Tuesday 4th August, 7.30am</p>
         </div>
     </div>
 
-    <!-- Left Column Sidebar -->
     <div class="sidebar-container">
-
-        <!-- GDACS Card -->
         <div class="card">
-            <h2>GDACS Alert Dummy</h2>
-            <div class="alert-badge">ORANGE ALERT (Tsunami)</div>
-            <table>
-                <tr><th>Event</th><td>EQ & Tsunami</td></tr>
-                <tr><th>Magnitude</th><td class="highlight">8.2M</td></tr>
-                <tr><th>Date/Time</th><td>Tue 4th Aug, 7.30am</td></tr>
-                <tr><th>Location</th><td>Tonga-Kermadec Trench</td></tr>
-                <tr><th>Coords</th><td>-14.91, -172.95</td></tr>
-            </table>
+            <h2>GDACS Alert Summary</h2>
+            <p><strong>Status:</strong> Orange Alert (Potential for regional tsunami).</p>
+            <p>Data indicates a major M8.2 event along the Tonga Trench. The alert focuses on potential tsunami inundation across regional coastal exposure zones.</p>
         </div>
-
-        <!-- USGS PAGER Card -->
         <div class="card">
-            <h2>USGS PAGER Dummy</h2>
-            <div class="alert-badge">ORANGE ALERT (Economic)</div>
-            <p style="font-size:10px; color:#666; font-style:italic;">Note: Evaluates shaking damage only; excludes independent tsunami calculations.</p>
-            <table>
-                <tr><th>Est. Fatalities</th><td>0–10 (Low Shaking)</td></tr>
-                <tr><th>Est. Losses</th><td>1–10% of Regional GDP</td></tr>
-                <tr><th>Threat</th><td>Tsunami Inundation (South Upolu)</td></tr>
-            </table>
+            <h2>USGS PAGER Assessment</h2>
+            <p><strong>Status:</strong> Orange Alert (Economic).</p>
+            <p>While modeled direct shaking fatalities are low (0-10), this assessment focuses on shaking impact. Tsunami inundation remains the primary humanitarian operational threat.</p>
         </div>
-
-        <!-- USGS ShakeMap Card -->
         <div class="card">
-            <h2>USGS ShakeMap Dummy</h2>
-            <p><strong>Far-Field M8.2 (Hour 0)</strong></p>
-            <table>
-                <tr><th>Coords</th><td>-14.911, -172.953</td></tr>
-                <tr><th>Samoa Shaking</th><td>MMI III–IV (Weak/Light)</td></tr>
-            </table>
-            
-            <p style="margin-top: 10px;"><strong>Local Aftershock (Hour 24)</strong></p>
-            <table>
-                <tr><th>Magnitude</th><td class="highlight">6.5M</td></tr>
-                <tr><th>Coords</th><td>-14.933, -172.709</td></tr>
-                <tr><th>Apia Shaking</th><td style="color:var(--alert-red); font-weight:bold;">MMI V–VI (Mod/Strong)</td></tr>
-            </table>
-        </div>
-    </div>
-
-    <!-- Right Column Map Overlay -->
-    <div class="map-overlay-stats">
-        <h3>Humanitarian Impact Summary</h3>
-        <div class="stat-row">
-            <span class="stat-label">Target Area:</span>
-            <span class="stat-value" style="color: #ffc107; font-size:12px;">South Upolu Coast</span>
-        </div>
-        <div class="stat-row">
-            <span class="stat-label">Total Affected Pop:</span>
-            <span class="stat-value" style="color:#ff9800;">6,000 – 7,000</span>
-        </div>
-        <div class="stat-row">
-            <span class="stat-label">Displaced Persons:</span>
-            <span class="stat-value">1,500 – 2,000</span>
-        </div>
-        <div class="stat-row">
-            <span class="stat-label">Reported Injuries:</span>
-            <span class="stat-value">~180</span>
-        </div>
-        <div class="stat-row">
-            <span class="stat-label">UN Staff Constraints:</span>
-            <span class="stat-value" style="font-size:12px; color:#ffc107;">Up to 30%</span>
+            <h2>USGS ShakeMap Analysis</h2>
+            <p><strong>Initial M8.2 Event:</strong> Samoa experienced Weak to Light shaking (MMI III–IV). The primary risk remains far-field tsunami waves.</p>
+            <p><strong>Hour 24 Local Aftershock (M6.5):</strong> Apia and surrounding areas recorded Moderate to Strong shaking (MMI V–VI). This has increased risks for structural damage to already-stressed critical infrastructure.</p>
         </div>
     </div>
 
     <script>
-        // Initialize map
         const map = L.map('map', { zoomControl: false }).setView([-14.3, -172.1], 8);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' }).addTo(map);
 
-        // Satellite Tiles
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri'
-        }).addTo(map);
-
-        const eq82Lat = -14.911572;
-        const eq82Lng = -172.953400;
-        
-        const eq65Lat = -14.933110;
-        const eq65Lng = -172.709328;
-
-        // Custom Earthquake Icon
-        const quakeIcon = L.divIcon({
-            html: '<span class="quake-icon-style">⚠️</span>',
-            className: 'custom-icon',
-            iconSize: [25, 25]
+        const whiteQuakeIcon = L.divIcon({
+            html: '<img src="https://raw.githubusercontent.com/mapaction/ocha-humanitarian-icons-for-gis/master/humanitarian-icons-v2-1-png/earthquake.png" style="filter: brightness(0) invert(1); width: 32px; height: 32px;">',
+            className: 'quake-icon',
+            iconSize: [32, 32]
         });
 
-        // --- M8.2 Tonga-Kermadec Event (Hour 0) ---
-        L.marker([eq82Lat, eq82Lng], { icon: quakeIcon }).addTo(map)
-            .bindTooltip("<b>Samoa M8.2 EQ</b><br>Tuesday 4th August, 7.30am", {
-                permanent: true, 
-                direction: 'left',
-                className: 'map-label',
-                offset: [-15, 0]
-            });
+        const eq82 = [-14.911572, -172.953400];
+        const eq65 = [-14.933110, -172.709328];
 
-        // --- M6.5 Local Aftershock Event (Hour 24) ---
-        L.circleMarker([eq65Lat, eq65Lng], {
-            color: '#ffffff',
-            fillColor: '#b71c1c',
-            fillOpacity: 1,
-            weight: 2,
-            radius: 6
-        }).addTo(map).bindTooltip("<b>M6.5 Local Aftershock</b><br>Simulated 24-Hour Inject", {
-            permanent: true, 
-            direction: 'right',
-            className: 'map-label map-label-red',
-            offset: [10, 0]
-        });
-            
+        // M8.2 Far-field
+        L.marker(eq82, { icon: whiteQuakeIcon }).addTo(map)
+            .bindTooltip("Samoa M8.2 EQ", {permanent: true, direction: 'bottom', className: 'map-label'});
+        L.circle(eq82, {color: 'orange', radius: 80000, fillOpacity: 0.2}).addTo(map);
+        L.circle(eq82, {color: 'orange', radius: 40000, fillOpacity: 0.2}).addTo(map);
+
+        // M6.5 Aftershock
+        L.marker(eq65, { icon: whiteQuakeIcon }).addTo(map)
+            .bindTooltip("M6.5 Local Aftershock", {permanent: true, direction: 'bottom', className: 'map-label map-label-red'});
+        L.circle(eq65, {color: 'red', radius: 40000, fillOpacity: 0.2}).addTo(map);
+        L.circle(eq65, {color: 'red', radius: 20000, fillOpacity: 0.2}).addTo(map);
     </script>
 </body>
 </html>
