@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIMEX Samoa 2026 | EXCON IM Dashboard</title>
     
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Mapbox GL JS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
 
     <style>
         :root {
             --ocha-blue: #005bbb;
             --alert-orange: #ff9800;
-            --alert-red: #b71c1c;
+            --alert-red: #ff5252;
             --text-main: #333;
-            --border-light: #ddd;
         }
         
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; overflow: hidden; }
@@ -27,29 +27,25 @@
             display: flex; align-items: center; gap: 15px; z-index: 1001;
             box-shadow: 0 4px 8px rgba(0,0,0,0.4);
         }
-        .top-header img { height: 45px; width: auto; background: white; padding: 2px; border-radius: 50%; }
+        .top-header img { height: 45px; width: auto; filter: brightness(0) invert(1); }
         .header-text h1 { margin: 0; font-size: 20px; text-transform: uppercase; }
         .header-text p { margin: 3px 0 0 0; font-size: 13px; opacity: 0.9; }
 
-        .sidebar-container { 
-            position: absolute; top: 85px; left: 15px; width: 320px; 
-            max-height: calc(100vh - 100px); z-index: 1000; 
-            display: flex; flex-direction: column; gap: 12px; 
-            overflow-y: auto; scrollbar-width: none;
-        }
-        .sidebar-container::-webkit-scrollbar { display: none; }
-        .card { 
-            background: rgba(255, 255, 255, 0.94); border-left: 4px solid var(--ocha-blue); 
-            padding: 14px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); 
-        }
-        .card h2 { font-size: 14px; margin-top: 0; color: var(--ocha-blue); text-transform: uppercase; border-bottom: 1px solid var(--border-light); padding-bottom: 5px; }
+        .sidebar-container { position: absolute; top: 85px; left: 15px; width: 320px; z-index: 1000; display: flex; flex-direction: column; gap: 12px; }
+        .card { background: rgba(255, 255, 255, 0.94); border-left: 4px solid var(--ocha-blue); padding: 14px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+        .card h2 { font-size: 14px; margin-top: 0; color: var(--ocha-blue); text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
         .card p { font-size: 12px; line-height: 1.4; color: #444; }
-        
-        .map-label {
-            background: rgba(0,0,0,0.7); color: #fff; border: 1px solid #555; padding: 4px 8px;
-            font-size: 11px; font-weight: bold; border-radius: 4px; text-align: center;
+
+        .map-overlay-stats {
+            position: absolute; top: 85px; right: 15px; width: 250px;
+            background: rgba(20, 24, 33, 0.9); color: white; padding: 15px;
+            border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            z-index: 1000; border-top: 4px solid var(--alert-red);
         }
-        .map-label-red { border-color: #ff5252; color: #ff5252; }
+        .map-overlay-stats h3 { margin: 0 0 10px 0; font-size: 13px; text-transform: uppercase; color: #ffc107; }
+        .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .stat-label { font-size: 11px; color: #ccc; }
+        .stat-value { font-size: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -57,53 +53,92 @@
     <div class="top-header">
         <img src="https://upload.wikimedia.org/wikipedia/commons/e/ee/UN_emblem_blue.svg" alt="UN Emblem">
         <div class="header-text">
-            <h1>SIMEX Samoa 2026</h1>
+            <h1>SIMEX SAMOA 2026</h1>
             <p>EXCON Active Alert Feed | Tuesday 4th August, 7.30am</p>
         </div>
     </div>
 
     <div class="sidebar-container">
         <div class="card">
-            <h2>GDACS Alert Summary</h2>
-            <p><strong>Status:</strong> Orange Alert (Potential for regional tsunami).</p>
-            <p>Data indicates a major M8.2 event along the Tonga Trench. The alert focuses on potential tsunami inundation across regional coastal exposure zones.</p>
+            <h2>GDACS Alert</h2>
+            <p>An Orange-level alert has been issued for a major tectonic event. The situation is being monitored for regional tsunami development.</p>
         </div>
         <div class="card">
-            <h2>USGS PAGER Assessment</h2>
-            <p><strong>Status:</strong> Orange Alert (Economic).</p>
-            <p>While modeled direct shaking fatalities are low (0-10), this assessment focuses on shaking impact. Tsunami inundation remains the primary humanitarian operational threat.</p>
+            <h2>USGS PAGER Summary</h2>
+            <p>Preliminary assessment indicates limited immediate shaking impact, though tsunami inundation remains the primary humanitarian concern.</p>
         </div>
         <div class="card">
-            <h2>USGS ShakeMap Analysis</h2>
-            <p><strong>Initial M8.2 Event:</strong> Samoa experienced Weak to Light shaking (MMI III–IV). The primary risk remains far-field tsunami waves.</p>
-            <p><strong>Hour 24 Local Aftershock (M6.5):</strong> Apia and surrounding areas recorded Moderate to Strong shaking (MMI V–VI). This has increased risks for structural damage to already-stressed critical infrastructure.</p>
+            <h2>USGS ShakeMap</h2>
+            <p>Initial analysis shows light shaking. A compounding event at 24 hours produced moderate-to-strong shaking near Apia, necessitating re-assessment of critical infrastructure.</p>
         </div>
     </div>
 
-    <script>
-        const map = L.map('map', { zoomControl: false }).setView([-14.3, -172.1], 8);
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' }).addTo(map);
+    <div class="map-overlay-stats">
+        <h3>Humanitarian Impact</h3>
+        <div class="stat-row"><span class="stat-label">Total Affected:</span><span class="stat-value">6,000–7,000</span></div>
+        <div class="stat-row"><span class="stat-label">Displaced:</span><span class="stat-value">1,500–2,000</span></div>
+        <div class="stat-row"><span class="stat-label">Injuries:</span><span class="stat-value">~180</span></div>
+    </div>
 
-        const whiteQuakeIcon = L.divIcon({
-            html: '<img src="https://raw.githubusercontent.com/mapaction/ocha-humanitarian-icons-for-gis/master/humanitarian-icons-v2-1-png/earthquake.png" style="filter: brightness(0) invert(1); width: 32px; height: 32px;">',
-            className: 'quake-icon',
-            iconSize: [32, 32]
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoibmVtYWlha290bzIwMjQiLCJhIjoiY2x5ODRmdmVqMGJpajJrcTZ0Z2p3YjZmMiJ9.1WaNl8YlKy68xDRh5FYRLA';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/nemaiakoto2024/cmqq2wfqj000i01t0397p5hgz',
+            center: [-172.1, -14.3],
+            zoom: 8
         });
 
-        const eq82 = [-14.911572, -172.953400];
-        const eq65 = [-14.933110, -172.709328];
+        map.on('load', () => {
+            // Load White EQ Icon
+            map.loadImage('https://raw.githubusercontent.com/mapaction/ocha-humanitarian-icons-for-gis/master/humanitarian-icons-v2-1-png/earthquake.png', (err, image) => {
+                if (err) throw err;
+                map.addImage('quake-icon', image);
 
-        // M8.2 Far-field
-        L.marker(eq82, { icon: whiteQuakeIcon }).addTo(map)
-            .bindTooltip("Samoa M8.2 EQ", {permanent: true, direction: 'bottom', className: 'map-label'});
-        L.circle(eq82, {color: 'orange', radius: 80000, fillOpacity: 0.2}).addTo(map);
-        L.circle(eq82, {color: 'orange', radius: 40000, fillOpacity: 0.2}).addTo(map);
+                // Add source
+                map.addSource('quakes', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: [
+                            { type: 'Feature', properties: { name: 'Samoa M8.2 EQ' }, geometry: { type: 'Point', coordinates: [-172.953, -14.911] } },
+                            { type: 'Feature', properties: { name: 'M6.5 Aftershock' }, geometry: { type: 'Point', coordinates: [-172.709, -14.933] } }
+                        ]
+                    }
+                });
 
-        // M6.5 Aftershock
-        L.marker(eq65, { icon: whiteQuakeIcon }).addTo(map)
-            .bindTooltip("M6.5 Local Aftershock", {permanent: true, direction: 'bottom', className: 'map-label map-label-red'});
-        L.circle(eq65, {color: 'red', radius: 40000, fillOpacity: 0.2}).addTo(map);
-        L.circle(eq65, {color: 'red', radius: 20000, fillOpacity: 0.2}).addTo(map);
+                // Rings (Approximated with buffer points or just styled circles)
+                // For simplicity, we add fixed-size circles as symbols
+                map.addLayer({
+                    id: 'quake-rings',
+                    type: 'circle',
+                    source: 'quakes',
+                    paint: {
+                        'circle-radius': 40,
+                        'circle-color': ['match', ['get', 'name'], 'Samoa M8.2 EQ', '#ff9800', 'red'],
+                        'circle-opacity': 0.2
+                    }
+                });
+
+                // Icons
+                map.addLayer({
+                    id: 'quake-icons',
+                    type: 'symbol',
+                    source: 'quakes',
+                    layout: {
+                        'icon-image': 'quake-icon',
+                        'icon-size': 0.8,
+                        'text-field': ['get', 'name'],
+                        'text-size': 12,
+                        'text-offset': [0, 2],
+                        'text-anchor': 'top',
+                        'text-halo-color': '#000',
+                        'text-halo-width': 1
+                    },
+                    paint: { 'text-color': '#fff' }
+                });
+            });
+        });
     </script>
 </body>
 </html>
