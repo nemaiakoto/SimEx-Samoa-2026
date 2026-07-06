@@ -10,16 +10,10 @@
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
 
     <style>
-        :root {
-            --ocha-blue: #005bbb;
-            --alert-orange: #ff9800;
-            --alert-red: #ff5252;
-            --text-main: #333;
-        }
-        
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; overflow: hidden; }
-        #map { position: fixed; top: 0; bottom: 0; width: 100%; z-index: 0; }
+        body { margin: 0; padding: 0; font-family: 'Open Sans', Arial, sans-serif; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
 
+        /* Top Header */
         .top-header {
             position: absolute; top: 0; left: 0; width: 100%;
             background-color: rgba(0, 91, 187, 0.95);
@@ -27,29 +21,48 @@
             display: flex; align-items: center; gap: 15px; z-index: 1001;
             box-shadow: 0 4px 8px rgba(0,0,0,0.4);
         }
-        .top-header img { height: 45px; width: auto; filter: brightness(0) invert(1); }
+        .top-header img { height: 45px; width: auto; }
         .header-text h1 { margin: 0; font-size: 20px; text-transform: uppercase; }
         .header-text p { margin: 3px 0 0 0; font-size: 13px; opacity: 0.9; }
 
-        .sidebar-container { position: absolute; top: 85px; left: 15px; width: 320px; z-index: 1000; display: flex; flex-direction: column; gap: 12px; }
+        /* Sidebar Container */
+        .sidebar-container { 
+            position: absolute; top: 85px; left: 15px; width: 320px; 
+            z-index: 1000; display: flex; flex-direction: column; gap: 12px; 
+        }
         .card { background: rgba(255, 255, 255, 0.94); border-left: 4px solid var(--ocha-blue); padding: 14px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
         .card h2 { font-size: 14px; margin-top: 0; color: var(--ocha-blue); text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
         .card p { font-size: 12px; line-height: 1.4; color: #444; }
 
+        /* Impact Summary */
         .map-overlay-stats {
-            position: absolute; top: 85px; right: 15px; width: 250px;
+            position: absolute; top: 85px; right: 15px; width: 280px;
             background: rgba(20, 24, 33, 0.9); color: white; padding: 15px;
             border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            z-index: 1000; border-top: 4px solid var(--alert-red);
+            z-index: 1000; border-top: 4px solid #ff5252;
         }
-        .map-overlay-stats h3 { margin: 0 0 10px 0; font-size: 13px; text-transform: uppercase; color: #ffc107; }
         .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .stat-label { font-size: 11px; color: #ccc; }
         .stat-value { font-size: 15px; font-weight: bold; }
+
+        /* PAGER Graphic */
+        .pager-graphic {
+            position: absolute; top: 250px; right: 15px; width: 280px;
+            background: rgba(255, 255, 255, 0.95); padding: 10px;
+            border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            z-index: 1000; font-size: 11px;
+        }
+        .pager-bar { display: flex; height: 15px; margin-top: 5px; }
+        .tier { flex: 1; }
+        .tier.green { background: #4caf50; }
+        .tier.yellow { background: #ffeb3b; }
+        .tier.orange { background: #ff9800; border: 2px solid black; } /* Active tier */
+        .tier.red { background: #f44336; border: 2px solid black; } /* Active tier */
     </style>
 </head>
 <body>
     <div id="map"></div>
+    
     <div class="top-header">
         <img src="https://upload.wikimedia.org/wikipedia/commons/e/ee/UN_emblem_blue.svg" alt="UN Emblem">
         <div class="header-text">
@@ -60,24 +73,37 @@
 
     <div class="sidebar-container">
         <div class="card">
-            <h2>GDACS Alert</h2>
-            <p>An Orange-level alert has been issued for a major tectonic event. The situation is being monitored for regional tsunami development.</p>
+            <h2>GDACS ALERT</h2>
+            <p>An Orange-level alert has been issued for the far-field M8.2 earthquake. Regional tsunami risks are being actively monitored.</p>
         </div>
         <div class="card">
-            <h2>USGS PAGER Summary</h2>
+            <h2>USGS PAGER SUMMARY</h2>
             <p>Preliminary assessment indicates limited immediate shaking impact, though tsunami inundation remains the primary humanitarian concern.</p>
         </div>
         <div class="card">
-            <h2>USGS ShakeMap</h2>
-            <p>Initial analysis shows light shaking. A compounding event at 24 hours produced moderate-to-strong shaking near Apia, necessitating re-assessment of critical infrastructure.</p>
+            <h2>USGS SHAKEMAP</h2>
+            <p><strong>Initial Event:</strong> Weak-to-light shaking across Samoa.<br><strong>Aftershock:</strong> M6.5 local event at 24-hours produced moderate-to-strong shaking.</p>
         </div>
     </div>
 
     <div class="map-overlay-stats">
-        <h3>Humanitarian Impact</h3>
+        <h3>HUMANITARIAN IMPACT SUMMARY</h3>
         <div class="stat-row"><span class="stat-label">Total Affected:</span><span class="stat-value">6,000–7,000</span></div>
         <div class="stat-row"><span class="stat-label">Displaced:</span><span class="stat-value">1,500–2,000</span></div>
         <div class="stat-row"><span class="stat-label">Injuries:</span><span class="stat-value">~180</span></div>
+    </div>
+
+    <div class="pager-graphic">
+        <strong>USGS PAGER ALERT TIERS</strong>
+        <div class="pager-bar">
+            <div class="tier green"></div>
+            <div class="tier yellow"></div>
+            <div class="tier orange"></div>
+            <div class="tier red"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:2px;">
+            <span>Green</span><span>Yellow</span><span>Orange</span><span>Red</span>
+        </div>
     </div>
 
     <script>
@@ -85,59 +111,38 @@
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/nemaiakoto2024/cmqq2wfqj000i01t0397p5hgz',
-            center: [-172.1, -14.3],
+            center: [-172.5, -14.5],
             zoom: 8
         });
 
-        map.on('load', () => {
-            // Load White EQ Icon
-            map.loadImage('https://raw.githubusercontent.com/mapaction/ocha-humanitarian-icons-for-gis/master/humanitarian-icons-v2-1-png/earthquake.png', (err, image) => {
-                if (err) throw err;
-                map.addImage('quake-icon', image);
-
-                // Add source
-                map.addSource('quakes', {
+        function addConcentricCircles(map, center, color, idPrefix) {
+            const radii = [10000, 25000, 45000];
+            radii.forEach((radius, index) => {
+                map.addSource(`${idPrefix}-${index}`, {
                     type: 'geojson',
                     data: {
-                        type: 'FeatureCollection',
-                        features: [
-                            { type: 'Feature', properties: { name: 'Samoa M8.2 EQ' }, geometry: { type: 'Point', coordinates: [-172.953, -14.911] } },
-                            { type: 'Feature', properties: { name: 'M6.5 Aftershock' }, geometry: { type: 'Point', coordinates: [-172.709, -14.933] } }
-                        ]
+                        type: 'Feature',
+                        geometry: { type: 'Point', coordinates: [center[1], center[0]] }
                     }
                 });
-
-                // Rings (Approximated with buffer points or just styled circles)
-                // For simplicity, we add fixed-size circles as symbols
                 map.addLayer({
-                    id: 'quake-rings',
+                    id: `${idPrefix}-layer-${index}`,
                     type: 'circle',
-                    source: 'quakes',
+                    source: `${idPrefix}-${index}`,
                     paint: {
-                        'circle-radius': 40,
-                        'circle-color': ['match', ['get', 'name'], 'Samoa M8.2 EQ', '#ff9800', 'red'],
-                        'circle-opacity': 0.2
+                        'circle-radius': radius / 500, // Scale for map zoom
+                        'circle-color': color,
+                        'circle-opacity': 0.2 - (index * 0.05),
+                        'circle-stroke-width': 1,
+                        'circle-stroke-color': color
                     }
-                });
-
-                // Icons
-                map.addLayer({
-                    id: 'quake-icons',
-                    type: 'symbol',
-                    source: 'quakes',
-                    layout: {
-                        'icon-image': 'quake-icon',
-                        'icon-size': 0.8,
-                        'text-field': ['get', 'name'],
-                        'text-size': 12,
-                        'text-offset': [0, 2],
-                        'text-anchor': 'top',
-                        'text-halo-color': '#000',
-                        'text-halo-width': 1
-                    },
-                    paint: { 'text-color': '#fff' }
                 });
             });
+        }
+
+        map.on('load', () => {
+            addConcentricCircles(map, [-14.911572, -172.953400], '#ff9800', 'eq82');
+            addConcentricCircles(map, [-14.933110, -172.709328], '#ff5252', 'eq65');
         });
     </script>
 </body>
