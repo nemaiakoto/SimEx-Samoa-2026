@@ -10,139 +10,313 @@
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
 
     <style>
-        body { margin: 0; padding: 0; font-family: 'Open Sans', Arial, sans-serif; }
-        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        :root {
+            --ocha-blue: #005bbb;
+            --alert-orange: #ff9800;
+            --alert-red: #ff5252;
+            --text-main: #333;
+            --border-light: #ddd;
+        }
+        
+        body { margin: 0; padding: 0; font-family: 'Open Sans', Arial, sans-serif; overflow: hidden; background-color: #eef1f6; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 0; }
 
-        /* Top Header */
+        /* Full-Width Top Header */
         .top-header {
             position: absolute; top: 0; left: 0; width: 100%;
             background-color: rgba(0, 91, 187, 0.95);
             color: white; padding: 12px 25px; box-sizing: border-box;
-            display: flex; align-items: center; gap: 15px; z-index: 1001;
+            display: flex; align-items: center; gap: 15px; z-index: 1001; 
             box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            pointer-events: auto;
         }
-        .top-header img { height: 45px; width: auto; }
-        .header-text h1 { margin: 0; font-size: 20px; text-transform: uppercase; }
-        .header-text p { margin: 3px 0 0 0; font-size: 13px; opacity: 0.9; }
-
-        /* Sidebar Container */
-        .sidebar-container { 
-            position: absolute; top: 85px; left: 15px; width: 320px; 
-            z-index: 1000; display: flex; flex-direction: column; gap: 12px; 
+        .top-header img {
+            height: 45px; width: auto;
+            filter: brightness(0) invert(1); /* Forces the blue logo to render pure white */
         }
-        .card { background: rgba(255, 255, 255, 0.94); border-left: 4px solid var(--ocha-blue); padding: 14px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
-        .card h2 { font-size: 14px; margin-top: 0; color: var(--ocha-blue); text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
-        .card p { font-size: 12px; line-height: 1.4; color: #444; }
+        .top-header .header-text h1 { margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .top-header .header-text p { margin: 3px 0 0 0; font-size: 13px; opacity: 0.9; }
 
-        /* Impact Summary */
+        /* Left Column Sidebar */
+        .sidebar-container {
+            position: absolute; top: 85px; left: 15px; width: 340px;
+            max-height: calc(100vh - 100px); z-index: 1000;
+            display: flex; flex-direction: column; gap: 12px;
+            overflow-y: auto; -ms-overflow-style: none; scrollbar-width: none;
+            pointer-events: none; 
+        }
+        .sidebar-container::-webkit-scrollbar { display: none; }
+        
+        /* Left-stacked Mini Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.96); border-left: 4px solid var(--ocha-blue);
+            border-radius: 4px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            backdrop-filter: blur(4px); pointer-events: auto; 
+        }
+        .card h2 { font-size: 13px; margin-top: 0; margin-bottom: 8px; color: var(--ocha-blue); text-transform: uppercase; border-bottom: 1px solid var(--border-light); padding-bottom: 5px; }
+        .card p { font-size: 12px; margin: 8px 0; line-height: 1.4; color: #444; }
+        
+        .alert-badge {
+            display: inline-block; padding: 4px 8px; border-radius: 3px;
+            color: white; font-weight: bold; font-size: 10px; text-transform: uppercase;
+            background-color: var(--alert-orange); margin-bottom: 5px;
+        }
+        
+        /* Right-hand Map Overlay Panel */
         .map-overlay-stats {
             position: absolute; top: 85px; right: 15px; width: 280px;
             background: rgba(20, 24, 33, 0.9); color: white; padding: 15px;
             border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            z-index: 1000; border-top: 4px solid #ff5252;
+            z-index: 1000; border-top: 4px solid var(--alert-red); pointer-events: auto;
         }
-        .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .map-overlay-stats h3 { margin: 0 0 15px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #ffc107; }
+        .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .stat-row:last-child { border-bottom: none; }
         .stat-label { font-size: 11px; color: #ccc; }
-        .stat-value { font-size: 15px; font-weight: bold; }
-
-        /* PAGER Graphic */
-        .pager-graphic {
-            position: absolute; top: 250px; right: 15px; width: 280px;
-            background: rgba(255, 255, 255, 0.95); padding: 10px;
-            border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            z-index: 1000; font-size: 11px;
-        }
-        .pager-bar { display: flex; height: 15px; margin-top: 5px; }
-        .tier { flex: 1; }
+        .stat-value { font-size: 15px; font-weight: bold; color: #fff; }
+        
+        /* PAGER Graphic Styles */
+        .pager-graphic { margin-top: 15px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 4px; }
+        .pager-graphic strong { font-size: 11px; color: #fff; }
+        .pager-bar { display: flex; height: 12px; margin-top: 8px; border-radius: 2px; overflow: hidden; }
+        .tier { flex: 1; opacity: 0.3; transition: all 0.3s; }
         .tier.green { background: #4caf50; }
         .tier.yellow { background: #ffeb3b; }
-        .tier.orange { background: #ff9800; border: 2px solid black; } /* Active tier */
-        .tier.red { background: #f44336; border: 2px solid black; } /* Active tier */
+        .tier.orange { background: #ff9800; }
+        .tier.red { background: #f44336; }
+        /* Active tiers for this SimEx */
+        .tier.active { opacity: 1; box-shadow: inset 0 0 0 1px #fff; }
+        
+        .pager-labels { display: flex; justify-content: space-between; margin-top: 4px; font-size: 10px; color: #aaa; }
+        .pager-labels span.active-label { color: #fff; font-weight: bold; }
+
+        /* Map Text Labels (Mapbox Markers) */
+        .eq-marker-label {
+            background: rgba(0, 0, 0, 0.75); border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            color: #fff; font-weight: bold; font-size: 12px; padding: 6px 10px;
+            text-align: center; white-space: nowrap; transform: translateY(15px);
+        }
+
+        /* Bottom PAGER Explanation Legend */
+        .bottom-legend {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(20, 24, 33, 0.95); color: #fff; padding: 15px 20px;
+            border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 1000; max-width: 800px; width: 90%; pointer-events: auto;
+            border-top: 3px solid #ff9800;
+        }
+        .bottom-legend h4 { margin: 0 0 10px 0; font-size: 13px; text-transform: uppercase; color: #ffc107; text-align: center;}
+        .legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
+        .legend-item { font-size: 11px; line-height: 1.4; color: #ddd; display: flex; align-items: flex-start; gap: 8px;}
+        .swatch { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
     </style>
 </head>
 <body>
+
+    <!-- Background Map -->
     <div id="map"></div>
-    
+
+    <!-- Full-Width Top Header -->
     <div class="top-header">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/e/ee/UN_emblem_blue.svg" alt="UN Emblem">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/ee/UN_emblem_blue.svg" alt="UN Emblem" crossorigin="anonymous">
         <div class="header-text">
-            <h1>SIMEX SAMOA 2026</h1>
+            <h1>SIMEX Samoa 2026</h1>
             <p>EXCON Active Alert Feed | Tuesday 4th August, 7.30am</p>
         </div>
     </div>
 
+    <!-- Left Column Sidebar (Narrative Text) -->
     <div class="sidebar-container">
+        
         <div class="card">
-            <h2>GDACS ALERT</h2>
+            <h2>GDACS Alert</h2>
             <p>An Orange-level alert has been issued for the far-field M8.2 earthquake. Regional tsunami risks are being actively monitored.</p>
         </div>
+
         <div class="card">
-            <h2>USGS PAGER SUMMARY</h2>
+            <h2>USGS PAGER Summary</h2>
             <p>Preliminary assessment indicates limited immediate shaking impact, though tsunami inundation remains the primary humanitarian concern.</p>
         </div>
+
         <div class="card">
-            <h2>USGS SHAKEMAP</h2>
-            <p><strong>Initial Event:</strong> Weak-to-light shaking across Samoa.<br><strong>Aftershock:</strong> M6.5 local event at 24-hours produced moderate-to-strong shaking.</p>
+            <h2>USGS ShakeMap</h2>
+            <p><strong>Initial Event:</strong> Weak-to-light shaking across Samoa.<br><br>
+            <strong>Aftershock:</strong> M6.5 local event at 24-hours produced moderate-to-strong shaking.</p>
         </div>
     </div>
 
+    <!-- Right Column Map Overlay: Humanitarian Impact & PAGER Graphic -->
     <div class="map-overlay-stats">
-        <h3>HUMANITARIAN IMPACT SUMMARY</h3>
-        <div class="stat-row"><span class="stat-label">Total Affected:</span><span class="stat-value">6,000–7,000</span></div>
-        <div class="stat-row"><span class="stat-label">Displaced:</span><span class="stat-value">1,500–2,000</span></div>
-        <div class="stat-row"><span class="stat-label">Injuries:</span><span class="stat-value">~180</span></div>
+        <h3>Humanitarian Impact Summary</h3>
+        <div class="stat-row">
+            <span class="stat-label">Total Affected:</span>
+            <span class="stat-value" style="color:#fff;">6,000 – 7,000</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Displaced:</span>
+            <span class="stat-value">1,500 – 2,000</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Injuries:</span>
+            <span class="stat-value">~180</span>
+        </div>
+        
+        <!-- Interactive PAGER Graphic -->
+        <div class="pager-graphic">
+            <strong>USGS PAGER ALERT TIERS</strong>
+            <div class="pager-bar">
+                <div class="tier green"></div>
+                <div class="tier yellow"></div>
+                <div class="tier orange active"></div>
+                <div class="tier red active"></div>
+            </div>
+            <div class="pager-labels">
+                <span>Green</span>
+                <span>Yellow</span>
+                <span class="active-label" style="color:#ff9800;">Orange</span>
+                <span class="active-label" style="color:#f44336;">Red</span>
+            </div>
+            <p style="font-size:10px; color:#ddd; margin: 8px 0 0 0; text-align:center;">
+                Current SimEx Status: <strong>ORANGE / RED</strong>
+            </p>
+        </div>
     </div>
 
-    <div class="pager-graphic">
-        <strong>USGS PAGER ALERT TIERS</strong>
-        <div class="pager-bar">
-            <div class="tier green"></div>
-            <div class="tier yellow"></div>
-            <div class="tier orange"></div>
-            <div class="tier red"></div>
-        </div>
-        <div style="display:flex; justify-content:space-between; margin-top:2px;">
-            <span>Green</span><span>Yellow</span><span>Orange</span><span>Red</span>
+    <!-- Bottom Legend explaining PAGER levels -->
+    <div class="bottom-legend">
+        <h4>USGS Pager Color Levels</h4>
+        <div class="legend-grid">
+            <div class="legend-item">
+                <div class="swatch" style="background:#4caf50;"></div>
+                <div><strong>Green:</strong> Low likelihood of casualties or damage.</div>
+            </div>
+            <div class="legend-item">
+                <div class="swatch" style="background:#ffeb3b;"></div>
+                <div><strong>Yellow:</strong> Minor to moderate damage and limited casualties are possible. Localized response is usually adequate.</div>
+            </div>
+            <div class="legend-item">
+                <div class="swatch" style="background:#ff9800;"></div>
+                <div><strong>Orange:</strong> Significant damage and casualties are likely. Regional or national disaster response may be required.</div>
+            </div>
+            <div class="legend-item">
+                <div class="swatch" style="background:#f44336;"></div>
+                <div><strong>Red:</strong> High potential for widespread damage and mass casualties. International disaster response and significant resource mobilization are typically necessary.</div>
+            </div>
         </div>
     </div>
 
     <script>
         mapboxgl.accessToken = 'pk.eyJ1IjoibmVtYWlha290bzIwMjQiLCJhIjoiY2x5ODRmdmVqMGJpajJrcTZ0Z2p3YjZmMiJ9.1WaNl8YlKy68xDRh5FYRLA';
+        
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/nemaiakoto2024/cmqq2wfqj000i01t0397p5hgz',
-            center: [-172.5, -14.5],
-            zoom: 8
+            style: 'mapbox://styles/nemaiakoto2024/cmqq2wfqj000i01t0397p5hgz', 
+            center: [-172.5, -14.2], // Centered beautifully on Samoa
+            zoom: 7.8, // Zoomed appropriately to see place names and both EQ locations
+            projection: 'mercator'
         });
 
-        function addConcentricCircles(map, center, color, idPrefix) {
-            const radii = [10000, 25000, 45000];
-            radii.forEach((radius, index) => {
-                map.addSource(`${idPrefix}-${index}`, {
-                    type: 'geojson',
-                    data: {
-                        type: 'Feature',
-                        geometry: { type: 'Point', coordinates: [center[1], center[0]] }
-                    }
-                });
-                map.addLayer({
-                    id: `${idPrefix}-layer-${index}`,
-                    type: 'circle',
-                    source: `${idPrefix}-${index}`,
-                    paint: {
-                        'circle-radius': radius / 500, // Scale for map zoom
-                        'circle-color': color,
-                        'circle-opacity': 0.2 - (index * 0.05),
-                        'circle-stroke-width': 1,
-                        'circle-stroke-color': color
-                    }
-                });
-            });
+        // Helper function to generate perfect GeoJSON circles for exact km radiuses
+        function createGeoJSONCircle(center, radiusInKm, points = 64) {
+            const coords = { latitude: center[1], longitude: center[0] };
+            const ret = [];
+            // Calculate offsets based on latitude
+            const distanceX = radiusInKm / (111.320 * Math.cos(coords.latitude * Math.PI / 180));
+            const distanceY = radiusInKm / 110.574;
+
+            for (let i = 0; i < points; i++) {
+                const theta = (i / points) * (2 * Math.PI);
+                const x = distanceX * Math.cos(theta);
+                const y = distanceY * Math.sin(theta);
+                ret.push([coords.longitude + x, coords.latitude + y]);
+            }
+            ret.push(ret[0]); // Close the polygon
+
+            return {
+                "type": "Feature",
+                "geometry": { "type": "Polygon", "coordinates": [ret] }
+            };
         }
 
         map.on('load', () => {
-            addConcentricCircles(map, [-14.911572, -172.953400], '#ff9800', 'eq82');
-            addConcentricCircles(map, [-14.933110, -172.709328], '#ff5252', 'eq65');
+            // --- 1. CLEANUP PREVIOUS STYLE DATA (El Nino Dots) ---
+            const layers = map.getStyle().layers;
+            for (const layer of layers) {
+                // Hides the specific El Nino points layer from the previous dashboard
+                if (layer.id === '2bba9652e4252c93e87d') {
+                    map.setLayoutProperty(layer.id, 'visibility', 'none');
+                }
+                // Broadly hides any leftover circle point layers that aren't base map UI
+                if (layer.type === 'circle' && !layer.id.includes('eq-')) {
+                    map.setLayoutProperty(layer.id, 'visibility', 'none');
+                }
+            }
+
+            // --- 2. ADD CONCENTRIC CIRCLES (50km, 100km, 150km) ---
+            function drawImpactZones(center, idPrefix) {
+                const levels = [
+                    { radius: 150, color: '#4caf50', name: 'green' }, // 150km Green
+                    { radius: 100, color: '#ffeb3b', name: 'yellow' }, // 100km Yellow
+                    { radius: 50, color: '#f44336', name: 'red' }      // 50km Red
+                ];
+
+                levels.forEach(level => {
+                    const geojson = createGeoJSONCircle(center, level.radius);
+                    const sourceId = `${idPrefix}-${level.name}-src`;
+                    
+                    map.addSource(sourceId, { 'type': 'geojson', 'data': geojson });
+                    
+                    // Add fill layer (faint background)
+                    map.addLayer({
+                        'id': `${idPrefix}-${level.name}-fill`,
+                        'type': 'fill',
+                        'source': sourceId,
+                        'paint': {
+                            'fill-color': level.color,
+                            'fill-opacity': 0.1
+                        }
+                    });
+                    
+                    // Add line layer (strong border)
+                    map.addLayer({
+                        'id': `${idPrefix}-${level.name}-line`,
+                        'type': 'line',
+                        'source': sourceId,
+                        'paint': {
+                            'line-color': level.color,
+                            'line-width': 1.5,
+                            'line-opacity': 0.8
+                        }
+                    });
+                });
+            }
+
+            // Define Coordinates
+            const eqEpicenter = [-172.953400, -14.911572];
+            const eqAftershock = [-172.709328, -14.933110];
+
+            // Draw boundaries for both points
+            drawImpactZones(eqEpicenter, 'main-eq');
+            drawImpactZones(eqAftershock, 'aftershock');
+
+            // --- 3. ADD FLOATING LABELS ---
+            
+            // Marker 1: M8.3 Epicentre
+            const el1 = document.createElement('div');
+            el1.className = 'eq-marker-label';
+            el1.innerHTML = '<span style="color:#ff5252; font-size:14px;">🔴</span> M8.3 Epicentre';
+            new mapboxgl.Marker({element: el1, anchor: 'top'})
+                .setLngLat(eqEpicenter)
+                .addTo(map);
+
+            // Marker 2: M6.4 Aftershock
+            const el2 = document.createElement('div');
+            el2.className = 'eq-marker-label';
+            el2.innerHTML = '<span style="color:#ff9800; font-size:14px;">🔴</span> M6.4 Aftershock';
+            new mapboxgl.Marker({element: el2, anchor: 'top'})
+                .setLngLat(eqAftershock)
+                .addTo(map);
         });
     </script>
 </body>
